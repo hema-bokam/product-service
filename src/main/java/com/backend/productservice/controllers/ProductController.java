@@ -32,7 +32,7 @@ public class ProductController {
         return productService.updateProduct(id, genericProductDto);
     }
     @DeleteMapping("/{id}")
-    public GenericProductDto deleteProduct(@PathVariable Long id){
+    public GenericProductDto deleteProduct(@PathVariable Long id) throws ProductNotFoundException {
         return productService.deleteProduct(id);
     }
 }
