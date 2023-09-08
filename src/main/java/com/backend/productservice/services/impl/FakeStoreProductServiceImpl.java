@@ -3,6 +3,7 @@ package com.backend.productservice.services.impl;
 import com.backend.productservice.dtos.FakeStoreProductDto;
 import com.backend.productservice.dtos.GetAllProductsResponse;
 import com.backend.productservice.dtos.GenericProductDto;
+import com.backend.productservice.exceptions.ProductNotFoundException;
 import com.backend.productservice.services.ProductService;
 import org.modelmapper.ModelMapper;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -42,11 +43,14 @@ public class FakeStoreProductServiceImpl implements ProductService {
     }
 
     @Override
-    public GenericProductDto getProductById(Long id) {
+    public GenericProductDto getProductById(Long id) throws ProductNotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<FakeStoreProductDto> response = restTemplate.getForEntity(productByIdUrl,
                 FakeStoreProductDto.class, id);
         FakeStoreProductDto fakeStoreProductDto = response.getBody();
+        if(fakeStoreProductDto == null){
+            throw new ProductNotFoundException("Product Not found with id: "+id);
+        }
         GenericProductDto genericProductDto = mapToGenericDto(fakeStoreProductDto);
         return genericProductDto;
     }
@@ -70,10 +74,13 @@ public class FakeStoreProductServiceImpl implements ProductService {
     }
 
     @Override
-    public GenericProductDto deleteProduct(Long id) {
+    public GenericProductDto deleteProduct(Long id) throws ProductNotFoundException {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ResponseEntity<FakeStoreProductDto> response = restTemplate.exchange(productByIdUrl,
                 HttpMethod.DELETE, null, FakeStoreProductDto.class, id);
+        if(response.getBody() == null){
+            throw new ProductNotFoundException("Product Not found with id: "+id);
+        }
         GenericProductDto deletedProduct = mapToGenericDto(response.getBody());
         return deletedProduct;
     }
