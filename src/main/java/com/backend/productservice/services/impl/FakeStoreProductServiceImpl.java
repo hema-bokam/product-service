@@ -1,17 +1,13 @@
 package com.backend.productservice.services.impl;
 
-import com.backend.productservice.dtos.FakeStoreProductDto;
+import com.backend.productservice.thirdpartyclients.fakestore.FakeStoreProductDto;
 import com.backend.productservice.dtos.GetAllProductsResponse;
 import com.backend.productservice.dtos.GenericProductDto;
 import com.backend.productservice.exceptions.ProductNotFoundException;
 import com.backend.productservice.services.ProductService;
+import com.backend.productservice.thirdpartyclients.fakestore.FakeStoreProductServiceClient;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,22 +16,18 @@ import java.util.stream.Collectors;
 @Service
 public class FakeStoreProductServiceImpl implements ProductService {
     private ModelMapper mapper;
-    private RestTemplateBuilder restTemplateBuilder;
-    private String productByIdUrl = "https://fakestoreapi.com/products/{id}";
-    private String productsUrl = "https://fakestoreapi.com/products";
+    private FakeStoreProductServiceClient fakeStoreProductServiceClient;
     public  FakeStoreProductServiceImpl(ModelMapper mapper,
-                                        RestTemplateBuilder restTemplateBuilder){
+                                        FakeStoreProductServiceClient fakeStoreProductServiceClient){
         this.mapper = mapper;
-        this.restTemplateBuilder = new RestTemplateBuilder();
+        this.fakeStoreProductServiceClient = fakeStoreProductServiceClient;
     }
 
     @Override
     public GetAllProductsResponse getAllProducts(){
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<FakeStoreProductDto[]> responseEntity = restTemplate.getForEntity(productByIdUrl,
-                FakeStoreProductDto[].class);
-        List<GenericProductDto> products = Arrays.stream(responseEntity.getBody())
-                .map(fakeStoreProductDto -> mapToGenericDto(fakeStoreProductDto))
+        FakeStoreProductDto[] fakeStoreProductDtos = fakeStoreProductServiceClient.getAllProducts();
+        List<GenericProductDto> products = Arrays.stream(fakeStoreProductDtos)
+                .map(fakeStoreProductDto -> mapToGenericProductDto(fakeStoreProductDto))
                 .collect(Collectors.toList());
         GetAllProductsResponse response = new GetAllProductsResponse();
         response.setGenericProductDtos(products);
@@ -43,49 +35,42 @@ public class FakeStoreProductServiceImpl implements ProductService {
     }
 
     @Override
-    public GenericProductDto getProductById(Long id) throws ProductNotFoundException {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<FakeStoreProductDto> response = restTemplate.getForEntity(productByIdUrl,
-                FakeStoreProductDto.class, id);
-        FakeStoreProductDto fakeStoreProductDto = response.getBody();
+    public GenericProductDto getProductById(Long id){
+        FakeStoreProductDto fakeStoreProductDto = fakeStoreProductServiceClient.getProductById(id);
         if(fakeStoreProductDto == null){
             throw new ProductNotFoundException("Product Not found with id: "+id);
         }
-        GenericProductDto genericProductDto = mapToGenericDto(fakeStoreProductDto);
-        return genericProductDto;
+        return mapToGenericProductDto(fakeStoreProductDto);
     }
 
     @Override
     public GenericProductDto createProduct(GenericProductDto genericProductDto) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<FakeStoreProductDto> response = restTemplate.postForEntity(productsUrl,
-                genericProductDto, FakeStoreProductDto.class);
-        GenericProductDto product = mapToGenericDto(response.getBody());
-        return product;
+        FakeStoreProductDto fakeStoreProductDto = fakeStoreProductServiceClient
+                .createProduct(mapToFakeStoreProductDto(genericProductDto));
+        return mapToGenericProductDto(fakeStoreProductDto);
     }
 
     @Override
     public GenericProductDto updateProduct(Long id, GenericProductDto genericProductDto) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<FakeStoreProductDto> response = restTemplate.exchange(productByIdUrl,
-                HttpMethod.PUT, new HttpEntity<>(genericProductDto), FakeStoreProductDto.class, id);
-        GenericProductDto updatedProduct = mapToGenericDto(response.getBody());
-        return updatedProduct;
+        FakeStoreProductDto fakeStoreProductDto = fakeStoreProductServiceClient
+                .updateProduct(id, mapToFakeStoreProductDto(genericProductDto));
+        return mapToGenericProductDto(fakeStoreProductDto);
     }
 
     @Override
-    public GenericProductDto deleteProduct(Long id) throws ProductNotFoundException {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ResponseEntity<FakeStoreProductDto> response = restTemplate.exchange(productByIdUrl,
-                HttpMethod.DELETE, null, FakeStoreProductDto.class, id);
-        if(response.getBody() == null){
+    public GenericProductDto deleteProduct(Long id){
+        FakeStoreProductDto fakeStoreProductDto = fakeStoreProductServiceClient
+                .deleteProduct(id);
+        if(fakeStoreProductDto == null){
             throw new ProductNotFoundException("Product Not found with id: "+id);
         }
-        GenericProductDto deletedProduct = mapToGenericDto(response.getBody());
-        return deletedProduct;
+        return mapToGenericProductDto(fakeStoreProductDto);
     }
 
-    private GenericProductDto mapToGenericDto(FakeStoreProductDto fakeStoreProductDto) {
+    private GenericProductDto mapToGenericProductDto(FakeStoreProductDto fakeStoreProductDto) {
         return this.mapper.map(fakeStoreProductDto, GenericProductDto.class);
+    }
+    private FakeStoreProductDto mapToFakeStoreProductDto(GenericProductDto genericProductDto){
+        return this.mapper.map(genericProductDto, FakeStoreProductDto.class);
     }
 }
