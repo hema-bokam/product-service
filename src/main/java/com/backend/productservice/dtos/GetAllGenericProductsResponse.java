@@ -7,6 +7,6 @@ import java.util.List;
 
 @Getter
 @Setter
-public class GetAllProductsResponse {
+public class GetAllGenericProductsResponse {
     private List<GenericProductDto> genericProductDtos;
 }

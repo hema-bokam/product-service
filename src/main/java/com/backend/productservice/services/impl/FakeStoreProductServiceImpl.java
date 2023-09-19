@@ -1,10 +1,10 @@
 package com.backend.productservice.services.impl;
 
 import com.backend.productservice.thirdpartyclients.fakestore.FakeStoreProductDto;
-import com.backend.productservice.dtos.GetAllProductsResponse;
+import com.backend.productservice.dtos.GetAllGenericProductsResponse;
 import com.backend.productservice.dtos.GenericProductDto;
 import com.backend.productservice.exceptions.ProductNotFoundException;
-import com.backend.productservice.services.ProductService;
+import com.backend.productservice.services.OldProductService;
 import com.backend.productservice.thirdpartyclients.fakestore.FakeStoreProductServiceClient;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -14,22 +14,22 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class FakeStoreProductServiceImpl implements ProductService {
+public class FakeStoreProductServiceImpl implements OldProductService {
     private ModelMapper mapper;
     private FakeStoreProductServiceClient fakeStoreProductServiceClient;
-    public  FakeStoreProductServiceImpl(ModelMapper mapper,
-                                        FakeStoreProductServiceClient fakeStoreProductServiceClient){
+    public FakeStoreProductServiceImpl(ModelMapper mapper,
+                                       FakeStoreProductServiceClient fakeStoreProductServiceClient){
         this.mapper = mapper;
         this.fakeStoreProductServiceClient = fakeStoreProductServiceClient;
     }
 
     @Override
-    public GetAllProductsResponse getAllProducts(){
+    public GetAllGenericProductsResponse getAllProducts(){
         FakeStoreProductDto[] fakeStoreProductDtos = fakeStoreProductServiceClient.getAllProducts();
         List<GenericProductDto> products = Arrays.stream(fakeStoreProductDtos)
                 .map(fakeStoreProductDto -> mapToGenericProductDto(fakeStoreProductDto))
                 .collect(Collectors.toList());
-        GetAllProductsResponse response = new GetAllProductsResponse();
+        GetAllGenericProductsResponse response = new GetAllGenericProductsResponse();
         response.setGenericProductDtos(products);
         return response;
     }
