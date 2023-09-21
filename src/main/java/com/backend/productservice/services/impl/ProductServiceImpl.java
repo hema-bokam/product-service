@@ -25,10 +25,10 @@ public class ProductServiceImpl implements ProductService {
         this.categoryRepository = categoryRepository;
     }
     @Override
-    public Product getProductById(UUID id) {
-        Optional<Product> productOptional = productRepository.findById(id);
+    public Product getProductById(String uuid) {
+        Optional<Product> productOptional = productRepository.findById(UUID.fromString(uuid));
         if(productOptional.isEmpty()){
-            throw new ProductNotFoundException("Product Not found with id: "+id);
+            throw new ProductNotFoundException("Product Not found with id: "+uuid);
         }
         return productOptional.get();
     }
@@ -45,27 +45,47 @@ public class ProductServiceImpl implements ProductService {
         product.setPrice(price);
         product.setDescription(description);
         product.setImage(image);
-        Category category = new Category();
-        category.setName(categoryName);
-        Category savedCategory = categoryRepository.save(category);
-        product.setCategory(savedCategory);
-
+        Optional<Category> optionalCategory= categoryRepository.findByNameEqualsIgnoreCase(categoryName);
+        if(optionalCategory.isPresent()){
+            product.setCategory(optionalCategory.get());
+        }
+        else{
+            Category category = new Category();
+            category.setName(categoryName);
+            product.setCategory(categoryRepository.save(category));
+        }
         return productRepository.save(product);
     }
 
 
     @Override
-    public Product updateProduct(UUID id, Product product) {
-        Product product1 = productRepository.findById(id).orElseThrow(()
-                -> new ProductNotFoundException("Product Not found with id: "+id));
-        //product1.setCategory();
-        return null;
+    public Product updateProduct(String uuid, String title, double price, String categoryName,String description,String image) {
+        Product product = productRepository.findById(UUID.fromString(uuid)).orElseThrow(()
+                -> new ProductNotFoundException("Product Not found with id: "+uuid));
+
+        if(title != null && !title.isBlank()) product.setTitle(title);
+        if(price > 0) product.setPrice(price);
+        if(description != null && !description.isBlank()) product.setDescription(description);
+        if(image != null && !image.isBlank()) product.setImage(image);
+        if(categoryName != null && !categoryName.isBlank()){
+            Optional<Category> optionalCategory= categoryRepository.findByNameEqualsIgnoreCase(categoryName);
+            if(optionalCategory.isPresent()){
+                product.setCategory(optionalCategory.get());
+            }
+            else{
+                Category category = new Category();
+                category.setName(categoryName);
+                product.setCategory(categoryRepository.save(category));
+            }
+        }
+        Product savedProduct = productRepository.save(product);
+        return product;
     }
 
     @Override
-    public void deleteProduct(UUID id) {
-        Product product = productRepository.findById(id).orElseThrow(()
-        -> new ProductNotFoundException("Product not found with id: "+id));
+    public void deleteProduct(String uuid) {
+        Product product = productRepository.findById(UUID.fromString(uuid)).orElseThrow(()
+        -> new ProductNotFoundException("Product not found with id: "+uuid));
         productRepository.delete(product);
     }
 

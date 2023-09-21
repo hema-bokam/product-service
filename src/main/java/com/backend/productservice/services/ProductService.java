@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {
-    Product getProductById(UUID id);
+    Product getProductById(String uuid);
     List<Product> getAllProducts();
     Product createProduct(String title, double price, String categoryName,String description,String image);
-    Product updateProduct(UUID id, Product product);
-    void deleteProduct(UUID id);
+    Product updateProduct(String uuid, String title, double price, String categoryName,String description,String image);
+    void deleteProduct(String uuid);
 }

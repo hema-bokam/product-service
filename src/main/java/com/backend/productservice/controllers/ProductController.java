@@ -1,15 +1,16 @@
 package com.backend.productservice.controllers;
 
+import com.backend.productservice.dtos.CreateProductDto;
 import com.backend.productservice.dtos.DeleteProductResponse;
 import com.backend.productservice.dtos.ProductDto;
 import com.backend.productservice.models.Product;
 import com.backend.productservice.services.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -20,7 +21,7 @@ public class ProductController {
         this.productService = productService;
     }
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDto> getProductById(@PathVariable("id") UUID id){
+    public ResponseEntity<ProductDto> getProductById(@PathVariable("id") String id){
         Product product = productService.getProductById(id);
         return new ResponseEntity<>(mapToProductDto(product), HttpStatus.OK);
     }
@@ -34,21 +35,28 @@ public class ProductController {
         return new ResponseEntity<>(productDtos, HttpStatus.OK);
     }
     @PostMapping
-    public ResponseEntity<ProductDto> createProduct(@RequestBody ProductDto productDto){
-        Product product = productService.createProduct(productDto.getTitle(),
-                productDto.getPrice(),
-                productDto.getCategory_name(),
-                productDto.getDescription(),
-                productDto.getImage());
+    public ResponseEntity<ProductDto> createProduct(@Valid  @RequestBody CreateProductDto request){
+        Product product = productService.createProduct(request.getTitle(),
+                request.getPrice(),
+                request.getCategoryName(),
+                request.getDescription(),
+                request.getImage());
         return new ResponseEntity<>(mapToProductDto(product), HttpStatus.OK);
     }
-//    @PutMapping("/{id}")
-//    public GenericProductDto updateProduct(@PathVariable UUID id,
-//                                           @RequestBody ProductDto productDto){
-//        return productService.updateProduct(id, productDto);
-//    }
+    @PutMapping("/{id}")
+    public ResponseEntity<ProductDto> updateProduct(@PathVariable String id,
+                                           @RequestBody ProductDto request){
+        Product product = productService.updateProduct(id,
+                request.getTitle(),
+                request.getPrice(),
+                request.getCategoryName(),
+                request.getDescription(),
+                request.getImage());
+        ProductDto productDto = mapToProductDto(product);
+        return new ResponseEntity<>(productDto, HttpStatus.OK);
+    }
     @DeleteMapping("/{id}")
-    public ResponseEntity<DeleteProductResponse> deleteProduct(@PathVariable("id") UUID id){
+    public ResponseEntity<DeleteProductResponse> deleteProduct(@PathVariable("id") String id){
         productService.deleteProduct(id);
         DeleteProductResponse response = new DeleteProductResponse();
         response.setMessage("Product deleted successfully");
@@ -61,8 +69,8 @@ public class ProductController {
         productDto.setPrice(product.getPrice());
         productDto.setImage(product.getImage());
         productDto.setTitle(product.getTitle());
-        productDto.setCategory_id(product.getCategory().getId());
-        productDto.setCategory_name(product.getCategory().getName());
+        productDto.setCategoryId(product.getCategory().getId());
+        productDto.setCategoryName(product.getCategory().getName());
         return productDto;
     }
 }
