@@ -3,7 +3,7 @@ package com.backend.productservice.services.impl;
 import com.backend.productservice.thirdpartyclients.fakestore.FakeStoreProductDto;
 import com.backend.productservice.dtos.GetAllGenericProductsResponse;
 import com.backend.productservice.dtos.GenericProductDto;
-import com.backend.productservice.exceptions.ProductNotFoundException;
+import com.backend.productservice.exceptions.ResourceNotFoundException;
 import com.backend.productservice.services.OldProductService;
 import com.backend.productservice.thirdpartyclients.fakestore.FakeStoreProductServiceClient;
 import org.modelmapper.ModelMapper;
@@ -38,7 +38,7 @@ public class FakeStoreProductServiceImpl implements OldProductService {
     public GenericProductDto getProductById(Long id){
         FakeStoreProductDto fakeStoreProductDto = fakeStoreProductServiceClient.getProductById(id);
         if(fakeStoreProductDto == null){
-            throw new ProductNotFoundException("Product Not found with id: "+id);
+            throw new ResourceNotFoundException("Product Not found with id: "+id);
         }
         return mapToGenericProductDto(fakeStoreProductDto);
     }
@@ -62,7 +62,7 @@ public class FakeStoreProductServiceImpl implements OldProductService {
         FakeStoreProductDto fakeStoreProductDto = fakeStoreProductServiceClient
                 .deleteProduct(id);
         if(fakeStoreProductDto == null){
-            throw new ProductNotFoundException("Product Not found with id: "+id);
+            throw new ResourceNotFoundException("Product Not found with id: "+id);
         }
         return mapToGenericProductDto(fakeStoreProductDto);
     }

@@ -41,7 +41,7 @@ public class ProductController {
                 request.getCategoryName(),
                 request.getDescription(),
                 request.getImage());
-        return new ResponseEntity<>(mapToProductDto(product), HttpStatus.OK);
+        return new ResponseEntity<>(mapToProductDto(product), HttpStatus.CREATED);
     }
     @PutMapping("/{id}")
     public ResponseEntity<ProductDto> updateProduct(@PathVariable String id,

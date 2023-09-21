@@ -1,6 +1,6 @@
 package com.backend.productservice.services.impl;
 
-import com.backend.productservice.exceptions.ProductNotFoundException;
+import com.backend.productservice.exceptions.ResourceNotFoundException;
 import com.backend.productservice.models.Category;
 import com.backend.productservice.models.Product;
 import com.backend.productservice.repositories.CategoryRepository;
@@ -28,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
     public Product getProductById(String uuid) {
         Optional<Product> productOptional = productRepository.findById(UUID.fromString(uuid));
         if(productOptional.isEmpty()){
-            throw new ProductNotFoundException("Product Not found with id: "+uuid);
+            throw new ResourceNotFoundException("Product Not found with id: "+uuid);
         }
         return productOptional.get();
     }
@@ -61,7 +61,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Product updateProduct(String uuid, String title, double price, String categoryName,String description,String image) {
         Product product = productRepository.findById(UUID.fromString(uuid)).orElseThrow(()
-                -> new ProductNotFoundException("Product Not found with id: "+uuid));
+                -> new ResourceNotFoundException("Product Not found with id: "+uuid));
 
         if(title != null && !title.isBlank()) product.setTitle(title);
         if(price > 0) product.setPrice(price);
@@ -85,7 +85,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public void deleteProduct(String uuid) {
         Product product = productRepository.findById(UUID.fromString(uuid)).orElseThrow(()
-        -> new ProductNotFoundException("Product not found with id: "+uuid));
+        -> new ResourceNotFoundException("Product not found with id: "+uuid));
         productRepository.delete(product);
     }
 
