@@ -19,8 +19,9 @@ import java.util.Map;
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorDetails> handleProductNotFoundException(Exception ex){
-        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage());
+    public ResponseEntity<ErrorDetails> handleProductNotFoundException(Exception ex,
+                                                                       WebRequest request){
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), ex.getMessage(), request.getDescription(false));
         return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
     @Override
@@ -33,5 +34,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             errorMap.put(fieldName, message);
         });
         return new ResponseEntity<>(errorMap, HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorDetails> handleGlobalException(Exception exception,
+                                                              WebRequest request){
+        ErrorDetails errorDetails = new ErrorDetails(new Date(), exception.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.NOT_FOUND);
     }
 }

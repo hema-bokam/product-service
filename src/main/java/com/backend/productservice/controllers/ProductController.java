@@ -3,6 +3,7 @@ package com.backend.productservice.controllers;
 import com.backend.productservice.dtos.CreateProductDto;
 import com.backend.productservice.dtos.DeleteProductResponse;
 import com.backend.productservice.dtos.ProductDto;
+import com.backend.productservice.models.Category;
 import com.backend.productservice.models.Product;
 import com.backend.productservice.services.ProductService;
 import jakarta.validation.Valid;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @RestController
@@ -26,7 +28,7 @@ public class ProductController {
         return new ResponseEntity<>(mapToProductDto(product), HttpStatus.OK);
     }
     @GetMapping
-    public ResponseEntity<List<ProductDto>> getProducts(){
+    public ResponseEntity<List<ProductDto>> getAllProducts(){
 
         List<Product> products = productService.getAllProducts();
         List<ProductDto> productDtos = products.stream().map(
